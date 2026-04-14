@@ -27,6 +27,7 @@ const activitySchema = new mongoose.Schema({
   ageGroup: { type: String, default: 'All ages' },
   distance: { type: Number, default: 0 },
   locationText: { type: String, default: '' },  // human readable address
+  availability: { type: String, default: 'Open daily · 6:00 AM – 8:00 PM' },
   latitude: { type: Number, default: null },     // ← new
   longitude: { type: Number, default: null },    // ← new
   bookingAvailable: { type: Boolean, default: true },

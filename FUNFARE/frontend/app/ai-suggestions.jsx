@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, TextInput, Alert
+  ActivityIndicator, TextInput, Alert, Linking
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -31,6 +31,16 @@ export default function AISuggestions() {
         ? prev.filter(i => i !== interest)
         : [...prev, interest]
     );
+  };
+
+  const openInMaps = async (query) => {
+    try {
+      const q = encodeURIComponent(query || '');
+      const url = `https://www.google.com/maps/search/?api=1&query=${q}`;
+      await Linking.openURL(url);
+    } catch (e) {
+      Alert.alert('Could not open maps', 'Please try again.');
+    }
   };
 
   const generateSuggestions = async () => {
@@ -253,12 +263,28 @@ export default function AISuggestions() {
 
               <Text style={styles.tipText}>🗺️ {item.tip}</Text>
 
-              {item.activityId && (
+              {item.activityId ? (
+                <View style={styles.actionRow}>
+                  <TouchableOpacity
+                    style={styles.viewBtn}
+                    onPress={() => router.push(`/activity/${item.activityId}`)}
+                  >
+                    <Text style={styles.viewBtnText}>View details</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.bookBtn}
+                    onPress={() => router.push(`/booking/${item.activityId}`)}
+                  >
+                    <Text style={styles.bookBtnText}>Book now →</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
                 <TouchableOpacity
-                  style={styles.bookBtn}
-                  onPress={() => router.push(`/activity/${item.activityId}`)}
+                  style={styles.mapFallbackBtn}
+                  onPress={() => openInMaps(item.name)}
                 >
-                  <Text style={styles.bookBtnText}>View & Book →</Text>
+                  <Text style={styles.mapFallbackBtnText}>Open in Maps →</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -378,11 +404,32 @@ const styles = StyleSheet.create({
   },
   detailChipText: { fontSize: 12, color: '#FF6B35', fontWeight: '600' },
   tipText: { fontSize: 12, color: '#888', lineHeight: 18, marginBottom: 12 },
+  actionRow: { flexDirection: 'row', gap: 10 },
+  viewBtn: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: '#FF6B35',
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  viewBtnText: { color: '#FF6B35', fontWeight: '700', fontSize: 14 },
   bookBtn: {
+    flex: 1,
     backgroundColor: '#FF6B35', borderRadius: 10,
     paddingVertical: 10, alignItems: 'center',
   },
   bookBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  mapFallbackBtn: {
+    borderWidth: 1.5,
+    borderColor: '#FF6B35',
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  mapFallbackBtnText: { color: '#FF6B35', fontWeight: '700', fontSize: 14 },
   regenerateBtn: {
     borderWidth: 1, borderColor: '#FF6B35', borderRadius: 16,
     paddingVertical: 14, alignItems: 'center', marginTop: 8,

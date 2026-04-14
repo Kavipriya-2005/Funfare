@@ -247,7 +247,7 @@ const activities = [
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQuWhj-EV5iqq8FEsNsHgmKY9KplkapHIOGbA&s',
     images: [
       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQuWhj-EV5iqq8FEsNsHgmKY9KplkapHIOGbA&s',
-      'https://casualwalker.com/wp-content/uploads/2026/01/thirugnana-sambandar-vayilar-nayanar-temple-mylai-kapaleeswarar-temple-9-1024x683.jpg',
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUVJydR7xDlqgFXL4EHk-1v73kewTIt5blOA&s',
       'https://pictures.trodly.com/image/activity/1862/size-885x420/mode-crop/5b6306517e0f2.jpg',
     ],
     reviews: [

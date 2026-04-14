@@ -17,6 +17,20 @@ export default function Profile() {
   const [bookingCount, setBookingCount] = useState(0);
   const [savedCount, setSavedCount] = useState(0);
 
+  const countValidConfirmedBookings = (list) => {
+    const arr = Array.isArray(list) ? list : [];
+    const valid = arr.filter((b) => {
+      const hasActivity = Boolean(b?.activity?.name || b?.activityName);
+      const status = (b?.status || 'confirmed').toLowerCase();
+      return hasActivity && status !== 'cancelled';
+    });
+    // De-dupe (backend uses _id, local may have local_ ids)
+    const uniqueKeys = new Set(
+      valid.map((b) => b?._id || b?.confirmationCode).filter(Boolean)
+    );
+    return uniqueKeys.size;
+  };
+
   useFocusEffect(
     useCallback(() => {
       loadProfile();
@@ -51,12 +65,15 @@ export default function Profile() {
           const bookingsRes = await api.get('/bookings/my', {
             headers: { Authorization: `Bearer ${token}` },
           });
-          setBookingCount(bookingsRes.data.length || 0);
+          setBookingCount(countValidConfirmedBookings(bookingsRes.data));
         } catch {
           // Fall back to local count
           const bookings = await AsyncStorage.getItem('bookings');
-          setBookingCount(bookings ? JSON.parse(bookings).length : 0);
+          setBookingCount(countValidConfirmedBookings(bookings ? JSON.parse(bookings) : []));
         }
+      } else {
+        const bookings = await AsyncStorage.getItem('bookings');
+        setBookingCount(countValidConfirmedBookings(bookings ? JSON.parse(bookings) : []));
       }
 
       const saved = await AsyncStorage.getItem('saved_activities');

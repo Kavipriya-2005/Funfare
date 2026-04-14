@@ -154,7 +154,8 @@ export default function ActivityDetail() {
     } catch (err) {
       console.warn('Could not save compare selection', err.message);
     }
-    router.push('/activity/compare');
+    // Also pass the clicked activity id via URL for web reliability.
+    router.push(`/activity/compare?preselect=${activity._id}`);
   };
 
   const WebMapPreview = ({ activity, userLocation, route }) => {
@@ -419,7 +420,9 @@ export default function ActivityDetail() {
 
         {/* Availability */}
         <Text style={styles.sectionTitle}>Availability</Text>
-        <Text style={styles.info}>🕐 {activity.availability}</Text>
+        <Text style={styles.info}>
+          🕐 {activity.availability || 'Open daily · 6:00 AM – 8:00 PM'}
+        </Text>
 
         <Text style={styles.sectionTitle}>Location</Text>
         <TouchableOpacity onPress={() => openDirections(activity)}>

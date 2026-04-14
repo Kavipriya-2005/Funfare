@@ -3,14 +3,17 @@ import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, ActivityIndicator
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getActivities } from '../../services/activityService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Compare() {
   const router = useRouter();
+  const { preselect } = useLocalSearchParams();
   const [activities, setActivities] = useState([]);
   const [selected, setSelected] = useState([]);
   const [loading, setLoading] = useState(true);
+  const compareStorageKey = 'compare_activities';
 
   useEffect(() => {
     getActivities()
@@ -18,6 +21,46 @@ export default function Compare() {
       .catch(() => setActivities([]))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    // Hydrate initial selection from AsyncStorage + optionally preselect via URL:
+    // /activity/compare?preselect=<id>
+    if (loading) return;
+    (async () => {
+      try {
+        const stored = await AsyncStorage.getItem(compareStorageKey);
+        const parsed = stored ? JSON.parse(stored) : [];
+        const storedList = Array.isArray(parsed) ? parsed : [];
+
+        const byId = new Map((activities || []).map(a => [a?._id, a]).filter(([id]) => !!id));
+
+        let hydrated = storedList
+          .map((a) => byId.get(a?._id) || a)
+          .filter((a) => a && a._id);
+
+        const preselectId = Array.isArray(preselect) ? preselect[0] : preselect;
+        if (preselectId && !hydrated.some((a) => a._id === preselectId)) {
+          const pre = byId.get(preselectId);
+          if (pre) hydrated = [pre, ...hydrated];
+        }
+
+        setSelected(hydrated.slice(0, 3));
+      } catch {
+        setSelected([]);
+      }
+    })();
+  }, [loading, activities, preselect]);
+
+  useEffect(() => {
+    // Persist selection so it survives navigation / refresh.
+    (async () => {
+      try {
+        await AsyncStorage.setItem(compareStorageKey, JSON.stringify(selected.slice(0, 3)));
+      } catch {
+        // no-op
+      }
+    })();
+  }, [selected]);
 
   const isSelected = (id) => selected.some(a => a._id === id);
 
